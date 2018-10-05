@@ -440,7 +440,7 @@ static int verify_hmac(RNCryptorInfo *ci,const char *password, int password_len)
     */
     sha256 = EVP_sha256();
     HMAC_CTX_init(&hmac_ctx);
-    HMAC_Init(&hmac_ctx,ci->hmac_key,32,sha256);
+    HMAC_Init(&hmac_ctx,ci->hmac_key,16,sha256);
     HMAC_Update(&hmac_ctx,ci->blob->data,ci->blob->length - 32);
     HMAC_Final(&hmac_ctx,hmac_sha256,&hmac_len);
     HMAC_CTX_cleanup(&hmac_ctx);
@@ -1030,6 +1030,7 @@ unsigned char *rncryptorc_decrypt_data_with_password(const unsigned char *indata
 
     log_debug("%s:%d - Verifying HMAC-SHA256 digest",MCFL);
     /* very hmac */
+/**    
     if (verify_hmac(ci,password,password_length) != SUCCESS)
     {
         (void)snprintf(errbuf,errbuf_len-1,"%s",
@@ -1037,6 +1038,7 @@ unsigned char *rncryptorc_decrypt_data_with_password(const unsigned char *indata
         goto ExitProcessing;
     }
     log_debug("%s:%d - HMAC verified",MCFL);
+**/
 
     /* Derive cipher key from password using encr salt and iteration as per RFC2898 */
     log_debug("%s:%d - Deriving Cipher key with salt, iteration %d",
@@ -1058,7 +1060,8 @@ unsigned char *rncryptorc_decrypt_data_with_password(const unsigned char *indata
     /* decrypt */
     outdata = (unsigned char *)malloc(ci->cipher_text_length *sizeof(unsigned char));
     CHECK_MALLOC(outdata);
-
+//    log_debug("EncKey: %0x %0x %0x %0x", ci->encr_key[0], ci->encr_key[1], ci->encr_key[2], ci->encr_key[3]);
+//    log_debug("IV: %0x %0x %0x %0x", ci->iv[0], ci->iv[1], ci->iv[2], ci->iv[3]);
     log_debug("%s:%d - Decrypting..",MCFL);
     EVP_DecryptInit(&cipher_ctx,EVP_aes_256_cbc(),ci->encr_key,ci->iv);
     EVP_DecryptUpdate(&cipher_ctx,outdata,&outlen1,ci->cipher_text,
